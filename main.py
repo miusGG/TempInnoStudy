@@ -141,6 +141,20 @@ inline_btn_1 = InlineKeyboardButton('Расписание', callback_data='butto
 inline_btn_2 = InlineKeyboardButton('Ативности', callback_data='button2')
 ikb.add(inline_btn_1, inline_btn_2)
 
+ikb2 = InlineKeyboardMarkup()
+inline_btn_11 = InlineKeyboardButton('Расписание 222222', callback_data='button1')
+inline_btn_21 = InlineKeyboardButton('Ативности', callback_data='button2')
+ikb2.add(inline_btn_11, inline_btn_21)
+
+@dp.callback_query_handler(lambda c: c.data == 'button1')
+async def button1(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_reply_markup(callback_query.from_user.id,
+                                        callback_query.message.message_id,
+                                        reply_markup=ikb2)
+    await bot.edit_message_text(message_id=callback_query.message.message_id,
+                                chat_id=callback_query.from_user.id,
+                                text='Hello')
 
 @dp.message_handler(state="Homepage_student")
 async def home_page(m: types.Message, state: FSMContext):
