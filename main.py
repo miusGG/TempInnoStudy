@@ -27,53 +27,7 @@ connected_users = []  # ученики
 vip_users = []  # вожатые
 
 
-# оздание стиха
-class Makarov:
-    # текст для обучения модели на основе цепей Маркова
-    text = '''
-    На заре ты еще со мной,
-    На заре ты со мною.
-    Но позже ты приходишь в дом,
-    Где я одна сижу.
-    '''
-
-    # создаем словарь для цепей Маркова
-    def generate_dict(text):
-        words = text.split()
-        word_dict = {}
-        for i in range(len(words) - 1):
-            if words[i] not in word_dict:
-                word_dict[words[i]] = []
-            word_dict[words[i]].append(words[i + 1])
-        return word_dict
-
-    # генерация нового текста на основе цепей Маркова
-    def generate_text(word_dict, length=50):
-        start_word = random.choice(list(word_dict.keys()))
-        new_text = [start_word]
-        for i in range(length):
-            last_word = new_text[-1]
-            if last_word in word_dict:
-                next_word = random.choice(word_dict[last_word])
-                new_text.append(next_word)
-            else:
-                start_word = random.choice(list(word_dict.keys()))
-                new_text.append(start_word)
-        return ' '.join(new_text)
-
-    # создание словаря на основе текста
-    word_dict = generate_dict(text)
-
-    # генерация нового стиха
-    new_text = generate_text(word_dict)
-    print(new_text)
-
-
 #  Функция для тестов какой нибудь дичи
-
-@dp.message_handler(commands=['test'])
-async def send_test(m: types.Message):
-    await m.answer(m['Message'])
 
 
 @dp.message_handler(commands=['start'], state='*')
@@ -91,25 +45,27 @@ async def send_welcome(m: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Вожатый", state='q0')
 async def Student_change(m: types.Message, state: FSMContext):
-    await m.reply(f"Привет, {m.from_user.first_name}", reply_markup=ReplyKeyboardRemove())
+    await m.reply(f"Привет, {m.from_user.first_name}, что бы Вы хотели сделать??\nСписок зарегестрированных учеников /pupils\nПосмотреть расписание /scadle и заменить рамписание /scadle_change\nСделать объявление /msg\n", reply_markup=ReplyKeyboardRemove())
+    message = "Ученики: \n"
+    acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
+    for i in acc:
+        message += "Имя:" + acc[i]['name'] + " Отряд:" + acc[i]['age'] + " Комната" + acc[i]['room'] + "\n"
     await state.set_state("q-2")  # надо дописать
+
+
+@dp.message_handler(commands=['pupils'])
+async def Students_list_print(m: types.Message):
+    message = "Ученики: \n"
+    acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
+    for i in acc:
+        message += "Имя:" + acc[i]['name'] + " Отряд:" + acc[i]['age'] + " Комната" + acc[i]['room'] + "\n"
+    await m.reply(message)
 
 
 @dp.message_handler(lambda message: message.text == "Участник", state='q0')
 async def Student_change(m: types.Message, state: FSMContext):
     await m.reply(f"Как тебя зовут?\nВ формате - Имя Фамилия Отчество", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q1")
-
-
-@dp.message_handler(state="q-2")
-async def Students_list_print(m: types.Message, state: FSMContext):
-    message = "Ученики:0\n"
-    acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
-    for i in acc:
-        message += "Имя:" + acc[i]['name'] + " Отряд:" + acc[i]['age'] + " Комната" + acc[i]['room'] + "\n"
-
-    await m.reply(message)
-    await state.set_state("q-3")  # надо дописать
 
 
 # @dp.message_handler(state='q-1')
