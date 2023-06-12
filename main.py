@@ -1,5 +1,6 @@
 import logging
 import random
+import json
 from random import randint
 import asyncio
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, \
@@ -82,7 +83,8 @@ async def send_welcome(m: types.Message, state: FSMContext):
     kd1 = types.KeyboardButton(text="Участник")
     keyboard.add(kd1, kb2)
     await m.answer(
-        "Привет! Это организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. \n Вы Вожатый или Участник?",
+        "Привет! Это организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. "
+        "\n Вы Вожатый или Участник?",
         reply_markup=keyboard)
     await state.set_state("q0")
 
@@ -95,8 +97,19 @@ async def Student_change(m: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Участник", state='q0')
 async def Student_change(m: types.Message, state: FSMContext):
-    await m.reply("Введите Своё ФИО в формате - Фамилия Имя Отчества", reply_markup=ReplyKeyboardRemove())
+    await m.reply(f"Как тебя зовут?\nВ формате - Имя Фамилия Отчество", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q1")
+
+
+@dp.message_handler(state="q-2")
+async def Students_list_print(m: types.Message, state: FSMContext):
+    message = "Ученики:0\n"
+    acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
+    for i in acc:
+        message += "Имя:" + acc[i]['name'] + " Отряд:" + acc[i]['age'] + " Комната" + acc[i]['room'] + "\n"
+
+    await m.reply(message)
+    await state.set_state("q-3")  # надо дописать
 
 
 # @dp.message_handler(state='q-1')
@@ -131,20 +144,31 @@ async def process_age(message: types.Message, state: FSMContext):
 @dp.message_handler(state="q3")
 async def home_state(m: types.Message, state: FSMContext):
     home = m.text
+    print("ДОБАВЛЕН НОВЫЙ ПОЛЬЗОВАТЕЛЬ")
     await state.update_data({"home": home})
     await state.set_state("Homepage_student")
+    data = await state.get_data()
+    name = data["name"]
+    age = data["age"]
+    home = data["home"]
+    acc = json.loads(open('1.json', 'r').read())
+    acc[str(m['from']['id'])] = {"name": name, "age": age, "room": home}
+    open('1.json', 'w').write(json.dumps(acc))
+
     await home_page(m, state)
 
 
+# ВСЕ ИНАЛЙНИ КНОПКИ
 ikb = InlineKeyboardMarkup()
 inline_btn_1 = InlineKeyboardButton('Расписание', callback_data='button1')
 inline_btn_2 = InlineKeyboardButton('Ативности', callback_data='button2')
 ikb.add(inline_btn_1, inline_btn_2)
 
 ikb2 = InlineKeyboardMarkup()
-inline_btn_11 = InlineKeyboardButton('Расписание 222222', callback_data='button1')
-inline_btn_21 = InlineKeyboardButton('Ативности', callback_data='button2')
+inline_btn_11 = InlineKeyboardButton('', callback_data='button3')
+inline_btn_21 = InlineKeyboardButton('Ативности', callback_data='button4')
 ikb2.add(inline_btn_11, inline_btn_21)
+
 
 @dp.callback_query_handler(lambda c: c.data == 'button1')
 async def button1(callback_query: types.CallbackQuery):
@@ -156,6 +180,7 @@ async def button1(callback_query: types.CallbackQuery):
                                 chat_id=callback_query.from_user.id,
                                 text='Hello')
 
+
 @dp.message_handler(state="Homepage_student")
 async def home_page(m: types.Message, state: FSMContext):
     data = await state.get_data()
@@ -165,6 +190,13 @@ async def home_page(m: types.Message, state: FSMContext):
     await bot.send_message(chat_id=m.from_user.id,
                            text=f"Имя:{name}\nОтряд:{age}\nКомната:{home}",
                            reply_markup=ikb)
+
+
+@dp.message_handler(state="Activites")
+async def home_page(m: types.Message, state: FSMContext):
+    await bot.send_message(chat_id=m.from_user.id,
+                           text=f"Это все наши активности и инофрмация которая может быть полезной",
+                           reply_markup=ikb2)
 
 
 if __name__ == '__main__':
