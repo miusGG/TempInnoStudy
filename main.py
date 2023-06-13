@@ -27,55 +27,6 @@ connected_users = []  # ученики
 vip_users = []  # вожатые
 
 
-# оздание стиха
-class Makarov:
-    # текст для обучения модели на основе цепей Маркова
-    text = '''
-    На заре ты еще со мной,
-    На заре ты со мною.
-    Но позже ты приходишь в дом,
-    Где я одна сижу.
-    '''
-
-    # создаем словарь для цепей Маркова
-    def generate_dict(text):
-        words = text.split()
-        word_dict = {}
-        for i in range(len(words) - 1):
-            if words[i] not in word_dict:
-                word_dict[words[i]] = []
-            word_dict[words[i]].append(words[i + 1])
-        return word_dict
-
-    # генерация нового текста на основе цепей Маркова
-    def generate_text(word_dict, length=50):
-        start_word = random.choice(list(word_dict.keys()))
-        new_text = [start_word]
-        for i in range(length):
-            last_word = new_text[-1]
-            if last_word in word_dict:
-                next_word = random.choice(word_dict[last_word])
-                new_text.append(next_word)
-            else:
-                start_word = random.choice(list(word_dict.keys()))
-                new_text.append(start_word)
-        return ' '.join(new_text)
-
-    # создание словаря на основе текста
-    word_dict = generate_dict(text)
-
-    # генерация нового стиха
-    new_text = generate_text(word_dict)
-    print(new_text)
-
-
-#  Функция для тестов какой нибудь дичи
-
-@dp.message_handler(commands=['test'])
-async def send_test(m: types.Message):
-    await m.answer(m['Message'])
-
-
 @dp.message_handler(commands=['start'], state='*')
 async def send_welcome(m: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -112,17 +63,6 @@ async def Students_list_print(m: types.Message, state: FSMContext):
     await state.set_state("q3")
 
 
-# @dp.message_handler(state='q-1')
-# async def send_welcome(m: types.Message, state: FSMContext):
-#     await m.reply("Введите Своё ФИО в формате - Фамилия Имя Отчества")
-#     await state.set_state("q1")
-
-
-# @dp.message_handler(state="q")
-# async def choose(message: types.Message, state: FSMContext):
-# if message.text == "3040":
-
-
 # Записываем отряд ученикам
 @dp.message_handler(state="q1")
 async def process_name(message: types.Message, state: FSMContext):
@@ -141,6 +81,7 @@ async def process_age(message: types.Message, state: FSMContext):
     await state.set_state("q3")
 
 
+#  Добавление новых пользователей и home_page Student
 @dp.message_handler(state="q3")
 async def home_state(m: types.Message, state: FSMContext):
     home = m.text
@@ -165,9 +106,13 @@ inline_btn_2 = InlineKeyboardButton('Ативности', callback_data='button2
 ikb.add(inline_btn_1, inline_btn_2)
 
 ikb2 = InlineKeyboardMarkup(row_width=2)
-inline_btn_11 = InlineKeyboardButton('Назад', callback_data='button3')
-inline_btn_21 = InlineKeyboardButton('Веселый сайт', callback_data='button4')
-ikb2.add(inline_btn_11, inline_btn_21)
+inline_btn_3 = InlineKeyboardButton('Назад', callback_data='button3')
+inline_btn_4 = InlineKeyboardButton('Веселый сайт', callback_data='button4')
+ikb2.add(inline_btn_3, inline_btn_4)
+
+ikb3 = InlineKeyboardMarkup(row_width=2)
+inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button5')
+ikb.add(inline_btn_5)
 
 
 @dp.message_handler(state="Homepage_student")
@@ -181,23 +126,47 @@ async def home_page(m: types.Message, state: FSMContext):
                            reply_markup=ikb)
 
 
+#  button1 - Расписание
 @dp.callback_query_handler(lambda c: c.data == 'button1', state='*')
 async def button1(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
-    #  замена кнопок
-    #await bot.edit_message_reply_markup(callback_query.from_user.id,
-                                        #callback_query.message.message_id,
-                                        #reply_markup=ikb2)
     await bot.edit_message_text(message_id=callback_query.message.message_id,
                                 chat_id=callback_query.from_user.id,
-                                text='Расписание:\n 7:45 Подъем', reply_markup=ikb2)
+                                text='Расписание:\n 7:45 Подъем', reply_markup=ikb3)
 
 
-@dp.message_handler(state="Activites")
-async def home_page2(m: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=m.from_user.id,
-                           text=f"Это все наши активности и инофрмация которая может быть полезной",
-                           reply_markup=ikb)
+@dp.callback_query_handler(lambda c: c.data == 'button2', state='*')
+async def button3(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
+                                text=f"Все интересные активности которые пока доступны!",
+                                reply_markup=ikb2)
+
+
+#  button3 - Назад
+@dp.callback_query_handler(lambda c: c.data == 'button3', state='*')
+async def button3(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    data = await state.get_data()
+    name = data["name"]
+    age = data["age"]
+    home = data["home"]
+    await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
+                                text=f"Имя:{name}\nОтряд:{age}\nКомната:{home}",
+                                reply_markup=ikb)
+
+
+#  button5 - Назад
+@dp.callback_query_handler(lambda c: c.data == 'button5', state='*')
+async def button5(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    data = await state.get_data()
+    name = data["name"]
+    age = data["age"]
+    home = data["home"]
+    await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
+                                text=f"Имя:{name}\nОтряд:{age}\nКомната:{home}",
+                                reply_markup=ikb)
 
 
 @dp.callback_query_handler(state='*')
