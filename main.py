@@ -83,7 +83,7 @@ async def send_welcome(m: types.Message, state: FSMContext):
     kd1 = types.KeyboardButton(text="Участник")
     keyboard.add(kd1, kb2)
     await m.answer(
-        "Привет! Это организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. "
+        "Привет! Это НЕ организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. "
         "\n Вы Вожатый или Участник?",
         reply_markup=keyboard)
     await state.set_state("q0")
