@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram Bot
+After=network.target
+
+[Service]
+User=miusgg
+Group=miusgg
+
+WorkingDirectory=/home/miusgg/TempInnoStudy/
+Environment="PYTHONPATH=/home/miusgg/TempInnoStudy/"
+ExecStart=/home/miusgg/TempInnoStudy/.venv/bin/python /home/miusgg/TempInnoStudy/main.py
+
+[Install]
+WantedBy=multi-user.target
