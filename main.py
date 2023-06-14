@@ -24,7 +24,6 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 connected_users = []  # ученики
-vip_users = []  # вожатые
 
 
 # ВСЕ ИНАЛЙНИ КНОПКИ
@@ -40,11 +39,12 @@ ikb2.add(inline_btn_3, inline_btn_4)
 
 ikb3 = InlineKeyboardMarkup(row_width=2)
 inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button5')
-ikb.add(inline_btn_5)
+ikb3.add(inline_btn_5)
 
 ikb4 = InlineKeyboardMarkup(row_width=2)
 inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button6')
 inline_btn_6 = InlineKeyboardButton('Участники', callback_data='button7')
+inline_btn_7 = InlineKeyboardButton('Сделать расссылку', callback_data='button8')
 
 
 @dp.message_handler(commands=['start'], state='*')
@@ -54,7 +54,7 @@ async def send_welcome(m: types.Message, state: FSMContext):
     kd1 = types.KeyboardButton(text="Участник")
     keyboard.add(kd1, kb2)
     await m.answer(
-        "Привет! Это НЕ организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. "
+        "Привет! Это организационный бот, он поможет Вам удобно и главное БЫСТРО руководить боольшой группой людей. "
         "\n Вы Вожатый или Участник?",
         reply_markup=keyboard)
     await state.set_state("q0")
@@ -62,7 +62,7 @@ async def send_welcome(m: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Вожатый", state='q0')
 async def Student_change1(m: types.Message, state: FSMContext):
-    await m.reply(f"Привет, {m.from_user.first_name}, чтобы Вы хотели сделать?", reply_markup=ikb4)
+    await m.reply(f"Привет, {m.from_user.first_name}, чтобы Зарегестрироваться как Куратор, Вам нужно написать код для входа:", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q-2")  # надо дописать
 
 
@@ -72,8 +72,31 @@ async def Student_change2(m: types.Message, state: FSMContext):
     await state.set_state("q1")
 
 
-#  Печать всех учеников по тексту Участиники
+@dp.message_handler(lambda message: message.text == "3040" or message.text == "4030", state="q-2")
+async def Curator_key(m: types.Message, state: FSMContext):
+    await m.answer(f"{m.from_user.first_name}, что Вы хотите сделать?", reply_markup=ikb4)
+    await state.set_state("q-3")
+
+
 @dp.callback_query_handler(lambda c: c.data == 'button6', state="*")
+async def button6(m: types.Message, state: FSMContext):
+    await state.set_state("q-3")
+
+
+@dp.message_handler(state="q-3")
+async def Curator_home(m: types.Message, state: FSMContext):
+    await m.answer(f"{m.from_user.first_name}, что Вы хотите сделать?", reply_markup=ikb4)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'button8', state="*")
+async def Students_atension(m: types.Message, state: FSMContext):
+    acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
+    for i in acc:
+        await bot.send_message(chat_id=i, text=f'Privet loham from @{m.from_user.username}')
+
+
+#  Печать всех учеников по тексту Участиники
+@dp.callback_query_handler(lambda c: c.data == 'button7', state="*")
 async def Students_list(m: types.Message, state: FSMContext):
     message = "Ученики:0\n"
     acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
@@ -115,6 +138,7 @@ async def home_state(m: types.Message, state: FSMContext):
     acc = json.loads(open('1.json', 'r').read())
     acc[str(m['from']['id'])] = {"name": name, "age": age, "room": home}
     open('1.json', 'w').write(json.dumps(acc))
+    connected_users.append(m.from_user.id)
     await home_page(m, state)
     await state.set_state("Homepage_student")
 
@@ -164,6 +188,13 @@ async def button3(callback_query: types.CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(lambda c: c.data == 'button4', state='*')
 async def button4(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
+
+
+
+#  button5 - Назад
+@dp.callback_query_handler(lambda c: c.data == 'button5', state='*')
+async def button5(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
     data = await state.get_data()
     name = data["name"]
     age = data["age"]
@@ -173,7 +204,6 @@ async def button4(callback_query: types.CallbackQuery, state: FSMContext):
                                 reply_markup=ikb)
 
 
-#  button5 - Назад
 @dp.callback_query_handler(lambda c: c.data == 'button5', state='*')
 async def button5(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
