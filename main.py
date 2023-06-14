@@ -41,13 +41,13 @@ async def send_welcome(m: types.Message, state: FSMContext):
 
 
 @dp.message_handler(lambda message: message.text == "Вожатый", state='q0')
-async def Student_change(m: types.Message, state: FSMContext):
+async def Student_change1(m: types.Message, state: FSMContext):
     await m.reply(f"Привет, {m.from_user.first_name}", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q-2")  # надо дописать
 
 
 @dp.message_handler(lambda message: message.text == "Участник", state='q0')
-async def Student_change(m: types.Message, state: FSMContext):
+async def Student_change2(m: types.Message, state: FSMContext):
     await m.reply(f"Как тебя зовут?\nВ формате - Имя Фамилия Отчество", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q1")
 
@@ -136,7 +136,7 @@ async def button1(callback_query: types.CallbackQuery, state: FSMContext):
 
 
 @dp.callback_query_handler(lambda c: c.data == 'button2', state='*')
-async def button3(callback_query: types.CallbackQuery, state: FSMContext):
+async def button2(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
                                 text=f"Все интересные активности которые пока доступны!",
@@ -146,6 +146,19 @@ async def button3(callback_query: types.CallbackQuery, state: FSMContext):
 #  button3 - Назад
 @dp.callback_query_handler(lambda c: c.data == 'button3', state='*')
 async def button3(callback_query: types.CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(callback_query.id)
+    data = await state.get_data()
+    name = data["name"]
+    age = data["age"]
+    home = data["home"]
+    await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id,
+                                text=f"Имя:{name}\nОтряд:{age}\nКомната:{home}",
+                                reply_markup=ikb)
+
+
+#  button4 - Веселый сайт
+@dp.callback_query_handler(lambda c: c.data == 'button4', state='*')
+async def button4(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     data = await state.get_data()
     name = data["name"]
