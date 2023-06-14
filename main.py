@@ -73,7 +73,7 @@ async def Student_change2(m: types.Message, state: FSMContext):
 
 
 #  Печать всех учеников по тексту Участиники
-@dp.message_handler(lambda c: c.data == 'button6', state="*")
+@dp.callback_query_handler(lambda c: c.data == 'button6', state="*")
 async def Students_list(m: types.Message, state: FSMContext):
     message = "Ученики:0\n"
     acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
