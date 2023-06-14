@@ -27,6 +27,26 @@ connected_users = []  # ученики
 vip_users = []  # вожатые
 
 
+# ВСЕ ИНАЛЙНИ КНОПКИ
+ikb = InlineKeyboardMarkup(row_width=2)
+inline_btn_1 = InlineKeyboardButton('Расписание', callback_data='button1')
+inline_btn_2 = InlineKeyboardButton('Ативности', callback_data='button2')
+ikb.add(inline_btn_1, inline_btn_2)
+
+ikb2 = InlineKeyboardMarkup(row_width=2)
+inline_btn_3 = InlineKeyboardButton('Назад', callback_data='button3')
+inline_btn_4 = InlineKeyboardButton('Веселый сайт', callback_data='button4')
+ikb2.add(inline_btn_3, inline_btn_4)
+
+ikb3 = InlineKeyboardMarkup(row_width=2)
+inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button5')
+ikb.add(inline_btn_5)
+
+ikb4 = InlineKeyboardMarkup(row_width=2)
+inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button6')
+inline_btn_6 = InlineKeyboardButton('Участники', callback_data='button7')
+
+
 @dp.message_handler(commands=['start'], state='*')
 async def send_welcome(m: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -42,7 +62,7 @@ async def send_welcome(m: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Вожатый", state='q0')
 async def Student_change1(m: types.Message, state: FSMContext):
-    await m.reply(f"Привет, {m.from_user.first_name}", reply_markup=ReplyKeyboardRemove())
+    await m.reply(f"Привет, {m.from_user.first_name}, чтобы Вы хотели сделать?", reply_markup=ikb4)
     await state.set_state("q-2")  # надо дописать
 
 
@@ -53,8 +73,8 @@ async def Student_change2(m: types.Message, state: FSMContext):
 
 
 #  Печать всех учеников по тексту Участиники
-@dp.message_handler(lambda message: message.text == "Участники", state="q-2")
-async def Students_list_print(m: types.Message, state: FSMContext):
+@dp.message_handler(lambda c: c.data == 'button6', state="*")
+async def Students_list(m: types.Message, state: FSMContext):
     message = "Ученики:0\n"
     acc = json.loads(open('1.json', 'r', encoding='utf-8').read())
     for i in acc:
@@ -97,22 +117,6 @@ async def home_state(m: types.Message, state: FSMContext):
     open('1.json', 'w').write(json.dumps(acc))
     await home_page(m, state)
     await state.set_state("Homepage_student")
-
-
-# ВСЕ ИНАЛЙНИ КНОПКИ
-ikb = InlineKeyboardMarkup(row_width=2)
-inline_btn_1 = InlineKeyboardButton('Расписание', callback_data='button1')
-inline_btn_2 = InlineKeyboardButton('Ативности', callback_data='button2')
-ikb.add(inline_btn_1, inline_btn_2)
-
-ikb2 = InlineKeyboardMarkup(row_width=2)
-inline_btn_3 = InlineKeyboardButton('Назад', callback_data='button3')
-inline_btn_4 = InlineKeyboardButton('Веселый сайт', callback_data='button4')
-ikb2.add(inline_btn_3, inline_btn_4)
-
-ikb3 = InlineKeyboardMarkup(row_width=2)
-inline_btn_5 = InlineKeyboardButton('Назад', callback_data='button5')
-ikb.add(inline_btn_5)
 
 
 @dp.message_handler(state="Homepage_student")
