@@ -71,7 +71,7 @@ async def Student_change1(m: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: message.text == "Участник", state='q0')
 async def Student_change2(m: types.Message, state: FSMContext):
-    await m.reply(f"☒Как тебя зовут?\nВ формате - Имя Фамилия Отчество", reply_markup=ReplyKeyboardRemove())
+    await m.reply(f"☒Как тебя зовут?\nВ формате - Фамилия Имя Отчество", reply_markup=ReplyKeyboardRemove())
     await state.set_state("q1")
 
 
@@ -111,7 +111,7 @@ async def schedule_input(m: types.Message, state: FSMContext):
     text = m.text
     new_schedule = {}
     for line in text.split('\n'):
-        label, time = line.split(" ")
+        label, time = line.split()
         new_schedule[label] = time
 
     with open('schedule.json', 'w') as file:
@@ -153,15 +153,12 @@ async def process_age(m: types.Message, state: FSMContext):
     name = data["name"]
     age = data["age"]
     home = data["home"]
-    acc = json.loads(open('1.json', 'r').read())
+    with open('1.json', 'r', encoding='utf-8') as file:
+        acc = json.loads(file.read())
     acc[str(m['from']['id'])] = {"name": name, "age": age, "room": home}
     open('1.json', 'w').write(json.dumps(acc))
     connected_users.append(m.from_user.id)
-    await bot.send_message(chat_id=m.from_user.id, text="✅Регистрация прошла успешно!")
-    await bot.send_message(chat_id=m.from_user.id,
-                           text=f"❧Твой профиль!☙\n◉ Имя:{name}\n◎ Курс:{age}\n◎ Комната:{home}",
-                           reply_markup=ikb)
-    await state.set_state("Homepage_student")
+    await state.set_state("q3")
 
 
 #  Добавление новых пользователей и home_page Student
@@ -197,7 +194,7 @@ async def home_page(m: types.Message, state: FSMContext):
                            reply_markup=ikb)
 
 
-@dp.callback_query_handler(lambda c: c.data == 'back_from_activities', state='*')
+@dp.callback_query_handler(lambda c: c.data == '', state='*')
 async def back_to_curator_home_page(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.send_message(chat_id=callback_query.from_user.id, text=f"❖{callback_query.from_user.id.first_name}, что Вы хотите сделать?", reply_markup=ikb4)
     await state.set_state("q-3")
@@ -250,7 +247,7 @@ async def button5(callback_query: types.CallbackQuery, state: FSMContext):
                                 reply_markup=ikb)
 
 
-@dp.callback_query_handler(lambda c: c.data == 'back', state='*')
+@dp.callback_query_handler(lambda c: c.data == 'back_from_activities', state='*')
 async def button5_(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
     data = await state.get_data()
